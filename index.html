@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket client </title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 50px;
+        }
+
+        #messages{
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 300px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .message{
+            margin: 5px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        .client-message{
+            background-color: #d4edda;
+            color: #155724;
+            text-align: right;
+            align-self: flex-end;
+        }
+        .server-message{
+            background-color: #cce5ff;
+            color: #004085;
+            text-align: left;
+            align-self: flex-start;
+        }
+        .message-container{
+            flex-direction: column;
+            margin-bottom: 5px
+        }
+    </style>
+    <script>
+        // create a WebSocket connection to the server
+        let socket = new WebSocket("ws://localhost:8080");
+
+        // called when the WebSocket connection established
+        socket.onopen = function (event) {
+            displayMessage("Connected to the WebSocket server", "server")
+        }
+
+        // called when a message is recieved from the server
+        socket.onmessage = function (event){
+            displayMessage(event.data, "server")
+        }
+
+
+        function displayMessage(message, sender) {
+            const messageContainer = document.getElementById("messages");
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+            messageElement.classList.add(
+                sender === "client" ? "client-message" : "server-message"
+            )
+
+            messageElement.textContent = message;
+
+            const messageWrapper = document.createElement("div")
+            messageWrapper.classList.add("message-container");
+            messageWrapper.appendChild(messageElement);
+
+            messageContainer.appendChild(messageElement);
+            messageContainer.scrollTop = messageContainer.scrollHeight; 
+
+        }
+
+        // function to send msg to the server 
+        function sendMessage() {
+            let message = document.getElementById("messageInput").value;
+
+            if (message.trim() !== null) {
+                socket.send(message)
+                displayMessage(message, "client"); // siplay sent msg on screen
+                document.getElementById("messageInput").value = ""; // clear input field after sending 
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>WebSocket Chat Client</h1>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Enter your message">
+    <button onclick="sendMessage()">Send</button>
+</body>
+</html>
